@@ -22,10 +22,10 @@ AND
 
 ## 快速开始
 
-纯文本描述即可：
+纯文本描述（最最最简单的方法）：
 
 ```bash
-直接把这个网址 + claude记忆文件的绝对路径给codex，然后让codex帮你安装即可（最最最简单的方法）
+请帮我安装这个插件：https://github.com/Looperswag/personal-memory-from-claude-to-codex + claude记忆文件的绝对路径：{填你记忆文件放的地方}，请codex帮我安装
 ```
 
 克隆仓库：
