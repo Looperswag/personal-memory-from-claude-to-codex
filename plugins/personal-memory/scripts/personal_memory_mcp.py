@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Minimal stdio MCP server for the local personal-memory plugin."""
+"""Stdio MCP server for the local personal-memory plugin with artifact drill-down."""
 
 from __future__ import annotations
 
@@ -16,15 +16,16 @@ SERVER_NAME = "personal-memory"
 PLUGIN_ROOT = Path(__file__).resolve().parents[1]
 IMPL_ROOT = Path(os.environ.get("PERSONAL_MEMORY_IMPL_ROOT", str(PLUGIN_ROOT))).expanduser().resolve()
 
-for path in (IMPL_ROOT, IMPL_ROOT / "scripts"):
+for path in (IMPL_ROOT, IMPL_ROOT / "scripts", PLUGIN_ROOT, PLUGIN_ROOT / "scripts"):
     path_text = str(path)
     if path_text not in sys.path:
         sys.path.insert(0, path_text)
 
 try:
-    from scripts import eval_memory_query, memory_query
+    from scripts import artifact_search, eval_memory_query, memory_query
     from scripts.memory_config import load_profile
 except ImportError:  # pragma: no cover - direct script fallback.
+    import artifact_search  # type: ignore
     import eval_memory_query  # type: ignore
     import memory_query  # type: ignore
     from memory_config import load_profile  # type: ignore
@@ -35,7 +36,13 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--self-test", action="store_true", help="Print local MCP server diagnostics and exit.")
     args = parser.parse_args(argv)
     if args.self_test:
-        print(json.dumps({"server": SERVER_NAME, "impl_root": str(IMPL_ROOT), "tools": [tool["name"] for tool in tools()]}, ensure_ascii=False, indent=2))
+        print(
+            json.dumps(
+                {"server": SERVER_NAME, "impl_root": str(IMPL_ROOT), "tools": [tool["name"] for tool in tools()]},
+                ensure_ascii=False,
+                indent=2,
+            )
+        )
         return 0
     serve_stdio()
     return 0
@@ -64,7 +71,7 @@ def handle_request(request: dict[str, Any]) -> dict[str, Any] | None:
             {
                 "protocolVersion": "2024-11-05",
                 "capabilities": {"tools": {}},
-                "serverInfo": {"name": SERVER_NAME, "version": "0.1.0"},
+                "serverInfo": {"name": SERVER_NAME, "version": "0.2.0"},
             },
         )
     if method == "notifications/initialized":
@@ -121,6 +128,25 @@ def tools() -> list[dict[str, Any]]:
             ),
         },
         {
+            "name": "find_memory_artifact",
+            "description": (
+                "Find exact raw conversation artifacts such as create_file prompt outputs. "
+                "Use when recall/search returns only a project summary but the user needs the underlying prompt, file, or section."
+            ),
+            "inputSchema": object_schema(
+                {
+                    "query": string_schema("Artifact query, e.g. 'AI导购 商品改写 prompt anchored_item'."),
+                    "limit": integer_schema("Maximum artifact results to return.", 1, 20),
+                    "candidate_limit": integer_schema("Maximum raw candidates to score.", 1, 500),
+                    "project_hint": string_schema("Optional project or conversation title hint."),
+                    "include_full_text": boolean_schema("Whether to include full artifact text."),
+                    "max_text_chars": integer_schema("Maximum characters per full_text result.", 200, 200000),
+                    "profile": string_schema("Personal memory profile name."),
+                },
+                required=["query"],
+            ),
+        },
+        {
             "name": "get_memory_node",
             "description": "Fetch one indexed memory node by id.",
             "inputSchema": object_schema(
@@ -153,6 +179,7 @@ def call_tool(name: str, arguments: dict[str, Any]) -> dict[str, Any]:
     dispatch: dict[str, Callable[[dict[str, Any]], dict[str, Any]]] = {
         "recall_memory": recall_memory,
         "search_memory": search_memory,
+        "find_memory_artifact": find_memory_artifact,
         "get_memory_node": get_memory_node,
         "eval_memory": eval_memory,
         "refresh_memory_index": refresh_memory_index,
@@ -187,6 +214,19 @@ def search_memory(arguments: dict[str, Any]) -> dict[str, Any]:
         limit=int(arguments.get("limit") or 6),
         candidate_limit=int(arguments.get("candidate_limit") or memory_query.CANDIDATE_LIMIT),
         include_cwd_hints=False,
+    )
+
+
+def find_memory_artifact(arguments: dict[str, Any]) -> dict[str, Any]:
+    profile = load_profile(profile_arg(arguments), fallback_root=IMPL_ROOT)
+    return artifact_search.find_memory_artifacts(
+        query=str(arguments.get("query", "")),
+        memory_root=profile.memory_root,
+        limit=int(arguments.get("limit") or 5),
+        candidate_limit=int(arguments.get("candidate_limit") or artifact_search.DEFAULT_CANDIDATE_LIMIT),
+        project_hint=str(arguments.get("project_hint") or ""),
+        include_full_text=bool(arguments.get("include_full_text", True)),
+        max_text_chars=int(arguments.get("max_text_chars") or artifact_search.DEFAULT_MAX_TEXT_CHARS),
     )
 
 
@@ -266,6 +306,10 @@ def string_schema(description: str) -> dict[str, Any]:
 
 def integer_schema(description: str, minimum: int, maximum: int) -> dict[str, Any]:
     return {"type": "integer", "description": description, "minimum": minimum, "maximum": maximum}
+
+
+def boolean_schema(description: str) -> dict[str, Any]:
+    return {"type": "boolean", "description": description}
 
 
 def result_response(request_id: Any, result: dict[str, Any]) -> dict[str, Any]:

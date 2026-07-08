@@ -161,6 +161,7 @@ class PersonalMemoryPluginTest(unittest.TestCase):
         payload = json.loads(completed.stdout)
         self.assertEqual(payload["server"], "personal-memory")
         self.assertIn("recall_memory", payload["tools"])
+        self.assertIn("find_memory_artifact", payload["tools"])
         self.assertIn("eval_memory", payload["tools"])
 
 

@@ -1,7 +1,7 @@
 {
   "name": "personal-memory",
-  "version": "0.1.0",
-  "description": "Profile-based local personal memory recall for Codex.",
+  "version": "0.2.0",
+  "description": "Profile-based local personal memory and raw artifact recall for Codex.",
   "author": {
     "name": "Looperswag"
   },
@@ -17,8 +17,8 @@
   "skills": "./skills/",
   "interface": {
     "displayName": "Personal Memory",
-    "shortDescription": "Recall local long-term memory from any Codex project.",
-    "longDescription": "Personal Memory provides profile-based local recall over a SQLite and Markdown memory archive, with deterministic reranking, explainable results, MCP tools, and an eval gate.",
+    "shortDescription": "Recall local long-term memory and raw artifacts from any Codex project.",
+    "longDescription": "Personal Memory provides profile-based local recall over a SQLite and Markdown memory archive, with deterministic reranking, deep raw artifact lookup, explainable MCP results, and an eval gate.",
     "developerName": "Looperswag",
     "category": "Productivity",
     "capabilities": [
@@ -28,6 +28,7 @@
     ],
     "defaultPrompt": [
       "Recall relevant memory for this project.",
+      "Find the exact prompt or artifact from an old conversation.",
       "Search my past project context.",
       "Run the memory retrieval eval gate."
     ],

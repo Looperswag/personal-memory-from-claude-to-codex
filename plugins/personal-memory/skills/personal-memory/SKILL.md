@@ -29,7 +29,8 @@ Prefer the MCP tools when they are available:
 2. Inspect `results` first. Each result includes `score`, `reasons`, and `read_next`.
 3. Read only the returned `read_next` files that are necessary for the task.
 4. Use `search_memory` for narrower keyword follow-up.
-5. Use `get_memory_node` only when a returned node id needs exact detail.
+5. Use `find_memory_artifact` when the user needs an exact raw prompt, created file, tool artifact, or deeply nested conversation section that is not present in the compact project summary.
+6. Use `get_memory_node` only when a returned node id needs exact detail.
 
 CLI fallback from the plugin directory:
 
@@ -49,11 +50,14 @@ The plugin MCP server exposes:
 
 - `recall_memory(query, cwd?, limit?, profile?)`
 - `search_memory(query, limit?, profile?)`
+- `find_memory_artifact(query, limit?, candidate_limit?, project_hint?, include_full_text?, max_text_chars?, profile?)`
 - `get_memory_node(id, profile?)`
 - `eval_memory(top_k?, profile?)`
 - `refresh_memory_index(profile?)`
 
 All tools are read-only except `refresh_memory_index`, which rebuilds the local SQLite index and should be treated as a maintenance operation.
+
+`find_memory_artifact` reads local raw `conversations.json` and returns exact artifact pointers such as `conversation_uuid`, `message_index`, `content_index`, and `field_path`. It is designed for requests like "recall the exact prompt", "find the file created in that old conversation", or "show the original tool artifact". It searches visible messages and artifact payloads, but does not search or return internal `thinking` blocks.
 
 ## Interpretation Rules
 
@@ -61,7 +65,7 @@ All tools are read-only except `refresh_memory_index`, which rebuilds the local 
 - The user's current prompt, current repository `AGENTS.md`, and current source files take precedence over historical memory.
 - If memory conflicts with the current repository state, surface the conflict and follow current files for implementation details.
 - Keep recalled context small. Prefer summaries and `read_next` paths over large memory dumps.
-- Do not read raw exported conversations unless the user explicitly asks for full conversation history or the compact index is insufficient.
+- Do not read raw exported conversations unless the user explicitly asks for full conversation history, asks for an exact prompt/artifact, or the compact index is insufficient. Prefer `find_memory_artifact` over manually grepping `conversations.json`.
 
 ## Quality Gate
 

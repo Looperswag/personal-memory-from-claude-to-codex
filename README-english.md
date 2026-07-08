@@ -13,9 +13,10 @@ The public repo intentionally does **not** include any personal memory data. You
 When Codex is opened inside a project that is not your memory archive, it normally cannot see historical Claude memory or past project context. This plugin adds a stable global entrypoint:
 
 - A Codex plugin skill: `personal-memory`
-- MCP tools: `recall_memory`, `search_memory`, `get_memory_node`, `eval_memory`, `refresh_memory_index`
+- MCP tools: `recall_memory`, `search_memory`, `find_memory_artifact`, `get_memory_node`, `eval_memory`, `refresh_memory_index`
 - A local profile file: `~/.personal-memory/profiles/default.json`
 - Deterministic reranking to avoid broad memory pollution
+- Deep raw artifact lookup for old prompts, created files, and tool outputs
 - Eval gate to prevent retrieval regressions
 
 ## Quick Start
@@ -100,6 +101,7 @@ From the plugin directory:
 python3 scripts/memory_query.py recall "shopping agent intent routing" --cwd "$PWD" --limit 6 --profile default
 python3 scripts/memory_query.py recall "paper-interpreter" --limit 3 --profile default --json
 python3 scripts/memory_query.py search "SwiftData OCR ledger" --profile default
+python3 scripts/artifact_search.py "AI shopping query rewrite prompt" --memory-root /absolute/path/to/your/claude_memory_archive --limit 1
 ```
 
 ## MCP Tools
@@ -110,6 +112,7 @@ The plugin exposes:
 | --- | --- |
 | `recall_memory(query, cwd?, limit?, profile?)` | Main ranked recall with cwd/project hints |
 | `search_memory(query, limit?, profile?)` | Explicit keyword search |
+| `find_memory_artifact(query, limit?, candidate_limit?, project_hint?, include_full_text?, max_text_chars?, profile?)` | Drill into raw `conversations.json` for exact prompts, created files, tool artifacts, and deeply nested conversation sections |
 | `get_memory_node(id, profile?)` | Fetch one indexed node |
 | `eval_memory(top_k?, profile?)` | Run eval cases from `codex_memory/memory_eval_cases.json` |
 | `refresh_memory_index(profile?)` | Rebuild the SQLite index |
@@ -122,6 +125,8 @@ V2 uses a two-stage pipeline:
 2. Deterministic rerank promotes exact project, alias, cwd, skill, title, and path matches.
 
 Broad sources such as `codex_memory/conversations.md`, project index files, and generic design chats are suppressed by default. They only enter main results when the query explicitly asks for raw/full conversation history.
+
+When a user needs the exact body of an old prompt, created file, or tool artifact, use `find_memory_artifact` after broad recall. It searches visible message text and artifact payloads, returns deterministic pointers (`conversation_uuid`, `message_index`, `content_index`, `field_path`), and excludes internal `thinking` blocks.
 
 Every result includes:
 
@@ -138,6 +143,12 @@ Run tests:
 
 ```bash
 python3 -m unittest discover -s tests -v
+```
+
+Run the MCP self-test:
+
+```bash
+python3 plugins/personal-memory/scripts/personal_memory_mcp.py --self-test
 ```
 
 Run your memory eval:
