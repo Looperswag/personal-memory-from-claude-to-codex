@@ -1,0 +1,18 @@
+{
+  "Example Shopping Agent": [
+    "shopping-agent",
+    "tmall-agent",
+    "qwen-shopping",
+    "intent-classifier"
+  ],
+  "Example Finance App": [
+    "finance-ios",
+    "ledger",
+    "ocr-accounting"
+  ],
+  "Example Paper Workbench": [
+    "paper-reading",
+    "research-notes",
+    "paper-interpreter"
+  ]
+}

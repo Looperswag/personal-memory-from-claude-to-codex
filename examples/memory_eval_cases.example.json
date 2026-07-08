@@ -1,0 +1,30 @@
+[
+  {
+    "id": "shopping-cwd-intent",
+    "category": "cwd_alias",
+    "query": "intent routing product relevance",
+    "cwd_name": "tmall-agent-sandbox",
+    "expected_any": [
+      "Shopping Agent",
+      "shopping-agent"
+    ],
+    "forbidden_any": [
+      "codex_memory/conversations.md"
+    ],
+    "notes": "Project alias should beat broad conversation history."
+  },
+  {
+    "id": "finance-cwd-ledger",
+    "category": "cwd_alias",
+    "query": "OCR ledger review",
+    "cwd_name": "finance-ios",
+    "expected_any": [
+      "Finance App",
+      "finance-app"
+    ],
+    "forbidden_any": [
+      "codex_memory/conversations.md"
+    ],
+    "notes": "Current directory should route to finance memory."
+  }
+]

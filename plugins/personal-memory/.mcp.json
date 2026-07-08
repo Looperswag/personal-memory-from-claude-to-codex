@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "personal-memory": {
+      "command": "python3",
+      "args": [
+        "./scripts/personal_memory_mcp.py"
+      ],
+      "cwd": "."
+    }
+  }
+}

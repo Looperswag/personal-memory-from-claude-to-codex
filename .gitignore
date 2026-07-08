@@ -1,0 +1,21 @@
+.DS_Store
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.venv/
+venv/
+
+# Personal/private memory data. Keep these local.
+memory_graph.db
+conversations.json
+users.json
+memories.json
+projects/
+design_chats/
+skills/*.skill
+codex_memory/
+!examples/
+
+# Local profile overrides.
+.personal-memory/

@@ -1,0 +1,37 @@
+{
+  "name": "personal-memory",
+  "version": "0.1.0",
+  "description": "Profile-based local personal memory recall for Codex.",
+  "author": {
+    "name": "Looperswag"
+  },
+  "repository": "https://github.com/Looperswag/personal-memory-codex",
+  "license": "MIT",
+  "keywords": [
+    "codex",
+    "memory",
+    "recall",
+    "personal-context",
+    "mcp"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Personal Memory",
+    "shortDescription": "Recall local long-term memory from any Codex project.",
+    "longDescription": "Personal Memory provides profile-based local recall over a SQLite and Markdown memory archive, with deterministic reranking, explainable results, MCP tools, and an eval gate.",
+    "developerName": "Looperswag",
+    "category": "Productivity",
+    "capabilities": [
+      "Local",
+      "MCP",
+      "Search"
+    ],
+    "defaultPrompt": [
+      "Recall relevant memory for this project.",
+      "Search my past project context.",
+      "Run the memory retrieval eval gate."
+    ],
+    "brandColor": "#2563EB"
+  },
+  "mcpServers": "./.mcp.json"
+}

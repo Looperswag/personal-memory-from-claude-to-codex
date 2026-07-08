@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Memory Graph</title>
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="shell">
+      <aside class="sidebar" aria-label="Memory controls">
+        <header class="brand">
+          <h1>Memory Graph</h1>
+          <span id="syncState">Indexing</span>
+        </header>
+        <label class="search">
+          <span>Search</span>
+          <input id="searchInput" type="search" autocomplete="off" />
+        </label>
+        <div class="filters" aria-label="Node filters">
+          <button class="filter active" data-type="project">Projects</button>
+          <button class="filter active" data-type="topic">Topics</button>
+          <button class="filter active" data-type="design">Design</button>
+          <button class="filter active" data-type="doc">Docs</button>
+          <button class="filter" data-type="file">Files</button>
+          <button class="filter active" data-type="skill">Skills</button>
+        </div>
+        <dl class="stats">
+          <div><dt>Nodes</dt><dd id="nodeCount">0</dd></div>
+          <div><dt>Edges</dt><dd id="edgeCount">0</dd></div>
+          <div><dt>Updated</dt><dd id="eventId">0</dd></div>
+        </dl>
+        <div id="results" class="results" aria-live="polite"></div>
+      </aside>
+
+      <main class="canvas">
+        <div class="toolbar" aria-label="Graph tools">
+          <button id="resetView" title="Reset layout">Reset</button>
+          <button id="showAll" title="Show all node types">All</button>
+        </div>
+        <svg id="graph" role="img" aria-label="Project memory graph"></svg>
+      </main>
+
+      <aside class="detail" aria-label="Node detail">
+        <div id="detailPanel" class="detail-inner">
+          <p class="muted">Select a node</p>
+        </div>
+      </aside>
+    </div>
+    <script src="/app.js"></script>
+  </body>
+</html>

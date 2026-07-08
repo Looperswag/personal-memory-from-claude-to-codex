@@ -1,0 +1,20 @@
+{
+  "name": "personal-memory",
+  "interface": {
+    "displayName": "Personal Memory"
+  },
+  "plugins": [
+    {
+      "name": "personal-memory",
+      "source": {
+        "source": "local",
+        "path": "./plugins/personal-memory"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}
