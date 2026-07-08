@@ -23,8 +23,8 @@ When Codex is opened inside a project that is not your memory archive, it normal
 Clone this repository:
 
 ```bash
-git clone https://github.com/Looperswag/personal-memory-codex.git
-cd personal-memory-codex
+git clone https://github.com/Looperswag/personal-memory-from-claude-to-codex.git
+cd personal-memory-from-claude-to-codex
 ```
 
 Add the local marketplace and install the plugin:

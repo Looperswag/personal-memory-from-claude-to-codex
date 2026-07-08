@@ -2,7 +2,7 @@
 
 > 中文首页。英文版见 [README-english.md](README-english.md)。
 
-`personal-memory-codex` 是一个可复用的 Codex 本地个人记忆插件。它让 Codex 在任意项目目录中，都能通过本地 profile 找到你的 Claude 导出记忆、历史项目笔记、压缩后的 Markdown 记忆库和 SQLite 索引。
+`personal-memory-from-claude-to-codex` 是一个可复用的 Codex 本地个人记忆插件。它让 Codex 在任意项目目录中，都能通过本地 profile 找到你的 Claude 导出记忆、历史项目笔记、压缩后的 Markdown 记忆库和 SQLite 索引。
 
 这个公开仓库**不包含任何个人记忆数据**。你的原始导出文件、SQLite 索引、profile 配置和私有项目记忆都保留在本机。
 
@@ -23,8 +23,8 @@
 克隆仓库：
 
 ```bash
-git clone https://github.com/Looperswag/personal-memory-codex.git
-cd personal-memory-codex
+git clone https://github.com/Looperswag/personal-memory-from-claude-to-codex.git
+cd personal-memory-from-claude-to-codex
 ```
 
 添加本地 Codex marketplace 并安装插件：
