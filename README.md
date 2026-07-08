@@ -1,45 +1,47 @@
-# Personal Memory for Codex
+# Codex 个人记忆插件
 
-Profile-based local long-term memory recall for Codex.
+> 中文首页。英文版见 [README-english.md](README-english.md)。
 
-This repository packages a reusable `personal-memory` Codex plugin that lets Codex recall your local Claude-exported memory, project notes, and compact Markdown summaries from any project directory.
+`personal-memory-codex` 是一个可复用的 Codex 本地个人记忆插件。它让 Codex 在任意项目目录中，都能通过本地 profile 找到你的 Claude 导出记忆、历史项目笔记、压缩后的 Markdown 记忆库和 SQLite 索引。
 
-The public repo intentionally does **not** include any personal memory data. You keep your exported memories, SQLite index, and profile config on your own machine.
+这个公开仓库**不包含任何个人记忆数据**。你的原始导出文件、SQLite 索引、profile 配置和私有项目记忆都保留在本机。
 
-## What It Solves
+## 解决什么问题
 
-When Codex is opened inside a project that is not your memory archive, it normally cannot see historical Claude memory or past project context. This plugin adds a stable global entrypoint:
+当你在一个普通项目目录里打开 Codex 时，Codex 通常看不到另一个文件夹里的历史记忆库，因此无法理解过往 Claude 对话、项目背景和长期上下文。
 
-- A Codex plugin skill: `personal-memory`
-- MCP tools: `recall_memory`, `search_memory`, `get_memory_node`, `eval_memory`, `refresh_memory_index`
-- A local profile file: `~/.personal-memory/profiles/default.json`
-- Deterministic reranking to avoid broad memory pollution
-- Eval gate to prevent retrieval regressions
+这个插件提供一个稳定入口：
 
-## Quick Start
+- Codex skill：`personal-memory`
+- MCP 工具：`recall_memory`、`search_memory`、`get_memory_node`、`eval_memory`、`refresh_memory_index`
+- 本地 profile：`~/.personal-memory/profiles/default.json`
+- 确定性重排序，减少宽泛记忆污染
+- eval gate，防止检索质量退化
 
-Clone this repository:
+## 快速开始
+
+克隆仓库：
 
 ```bash
 git clone https://github.com/Looperswag/personal-memory-codex.git
 cd personal-memory-codex
 ```
 
-Add the local marketplace and install the plugin:
+添加本地 Codex marketplace 并安装插件：
 
 ```bash
 codex plugin marketplace add "$PWD"
 codex plugin add personal-memory@personal-memory
 ```
 
-Create your default profile:
+创建默认 profile：
 
 ```bash
 mkdir -p ~/.personal-memory/profiles
 cp examples/default-profile.example.json ~/.personal-memory/profiles/default.json
 ```
 
-Edit `~/.personal-memory/profiles/default.json`:
+编辑 `~/.personal-memory/profiles/default.json`，把 `memory_root` 改成你自己的本地记忆库路径：
 
 ```json
 {
@@ -49,11 +51,28 @@ Edit `~/.personal-memory/profiles/default.json`:
 }
 ```
 
-Open a new Codex thread after installing. Then ask Codex to use `personal-memory` before answering project-history questions.
+安装后请新开一个 Codex 线程。新线程会加载插件 skill 和 MCP 工具。
 
-## Memory Archive Layout
+## 推荐用法
 
-Your private memory root should look like this after indexing:
+在任意项目目录中，可以让 Codex 先调用个人记忆：
+
+```text
+请先用 personal-memory 回忆这个项目可能关联的历史上下文，再回答我的问题。
+```
+
+也可以直接使用 CLI：
+
+```bash
+cd plugins/personal-memory
+python3 scripts/memory_query.py recall "shopping agent intent routing" --cwd "$PWD" --limit 6 --profile default
+python3 scripts/memory_query.py recall "paper-interpreter" --limit 3 --profile default --json
+python3 scripts/memory_query.py search "SwiftData OCR ledger" --profile default
+```
+
+## 记忆库结构
+
+你的私有 `memory_root` 通常类似这样：
 
 ```text
 your_memory_archive/
@@ -72,11 +91,11 @@ your_memory_archive/
   conversations.json
 ```
 
-Only `memory_graph.db` and compact Markdown are needed for normal recall. Raw export files stay local and should not be committed.
+日常召回主要依赖 `memory_graph.db` 和压缩后的 `codex_memory/` Markdown。原始导出文件保留本地，不应提交到公开仓库。
 
-## Build Or Refresh The Index
+## 构建或刷新索引
 
-If you already have a Claude export directory:
+如果你已经有 Claude 导出目录，可以先整理和重建索引：
 
 ```bash
 cd plugins/personal-memory
@@ -84,44 +103,40 @@ python3 scripts/organize_claude_memory.py /absolute/path/to/your/claude_memory_a
 python3 -c 'from pathlib import Path; from memory_graph.indexer import MemoryGraphIndexer; root=Path("/absolute/path/to/your/claude_memory_archive"); MemoryGraphIndexer(root, root / "memory_graph.db").rebuild("manual")'
 ```
 
-You can also refresh through MCP with:
+也可以通过 MCP 维护工具刷新：
 
 ```text
 refresh_memory_index(profile="default")
 ```
 
-## CLI Usage
+## MCP 工具
 
-From the plugin directory:
-
-```bash
-python3 scripts/memory_query.py recall "shopping agent intent routing" --cwd "$PWD" --limit 6 --profile default
-python3 scripts/memory_query.py recall "paper-interpreter" --limit 3 --profile default --json
-python3 scripts/memory_query.py search "SwiftData OCR ledger" --profile default
-```
-
-## MCP Tools
-
-The plugin exposes:
-
-| Tool | Purpose |
+| 工具 | 用途 |
 | --- | --- |
-| `recall_memory(query, cwd?, limit?, profile?)` | Main ranked recall with cwd/project hints |
-| `search_memory(query, limit?, profile?)` | Explicit keyword search |
-| `get_memory_node(id, profile?)` | Fetch one indexed node |
-| `eval_memory(top_k?, profile?)` | Run eval cases from `codex_memory/memory_eval_cases.json` |
-| `refresh_memory_index(profile?)` | Rebuild the SQLite index |
+| `recall_memory(query, cwd?, limit?, profile?)` | 主召回入口，会结合当前目录和项目 alias |
+| `search_memory(query, limit?, profile?)` | 显式关键词搜索 |
+| `get_memory_node(id, profile?)` | 按 id 获取一个索引节点 |
+| `eval_memory(top_k?, profile?)` | 运行 `codex_memory/memory_eval_cases.json` 评测集 |
+| `refresh_memory_index(profile?)` | 维护操作：重建 SQLite 索引 |
 
-## Retrieval Strategy
+除 `refresh_memory_index` 外，其余工具默认只读。
 
-V2 uses a two-stage pipeline:
+## V2 检索策略
 
-1. SQLite FTS pulls a wider candidate set.
-2. Deterministic rerank promotes exact project, alias, cwd, skill, title, and path matches.
+V2 使用两阶段检索：
 
-Broad sources such as `codex_memory/conversations.md`, project index files, and generic design chats are suppressed by default. They only enter main results when the query explicitly asks for raw/full conversation history.
+1. SQLite FTS 先召回较宽候选集。
+2. 确定性 rerank 再根据项目、alias、cwd、skill 名称、标题和路径命中进行排序。
 
-Every result includes:
+默认会抑制宽泛来源，避免污染主结果：
+
+- `codex_memory/conversations.md`
+- 项目总索引
+- 泛 design chat
+
+只有当 query 明确包含 `raw`、`conversation`、`history`、`全量会话`、`聊天记录` 等意图时，宽泛会话记忆才会进入主结果。
+
+每条结果会输出：
 
 - `score`
 - `reasons`
@@ -130,32 +145,47 @@ Every result includes:
 - `suppressed_results`
 - `diagnostics`
 
-## Eval Gate
+## 评测门禁
 
-Run tests:
+运行公开 synthetic tests：
 
 ```bash
 python3 -m unittest discover -s tests -v
 ```
 
-Run your memory eval:
+运行你的私有记忆评测：
 
 ```bash
 cd plugins/personal-memory
 python3 scripts/eval_memory_query.py --top-k 5 --profile default --fail-under 0.97
 ```
 
-Suggested gates:
+建议门槛：
 
 - Recall@5 >= 0.97
 - MRR >= 0.90
 - Forbidden hits = 0
-- skills Recall@5 = 1.00 and MRR >= 0.80
+- skills Recall@5 = 1.00，MRR >= 0.80
 - cwd_alias MRR >= 0.90
 
-## Privacy
+## V1 到 V2 的效果
 
-Do not commit your private memory archive. This repository's `.gitignore` excludes common Claude export files and generated memory artifacts:
+原 32 条评测试卷上，V2 相比 V1：
+
+| 指标 | V1 Baseline | V2 Optimized |
+| --- | ---: | ---: |
+| Recall@5 | 0.969 | 1.000 |
+| MRR | 0.749 | 0.979 |
+| Forbidden hits | 4 | 0 |
+| skills Recall@5 | 0.667 | 1.000 |
+| skills MRR | 0.133 | 1.000 |
+| cwd_alias MRR | 0.698 | 1.000 |
+
+更详细的技术路线对比见 [docs/V1_V2_COMPARISON.md](docs/V1_V2_COMPARISON.md)。
+
+## 隐私说明
+
+请不要提交你的私有记忆库。本仓库 `.gitignore` 已默认排除常见 Claude 导出文件和生成产物：
 
 - `conversations.json`
 - `memories.json`
@@ -165,5 +195,4 @@ Do not commit your private memory archive. This repository's `.gitignore` exclud
 - `codex_memory/`
 - `memory_graph.db`
 
-Keep only framework code, examples, and sanitized eval summaries in git.
-
+公开仓库只保留框架代码、插件结构、示例配置和脱敏评测摘要。
