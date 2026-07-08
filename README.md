@@ -1,4 +1,4 @@
-# Codex 个人记忆插件
+# Codex 个人记忆迁移（from claude）插件
 
 > 中文首页。英文版见 [README-english.md](README-english.md)。
 
